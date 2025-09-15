@@ -6,40 +6,59 @@
 
 using namespace std;
 
-/*Implementar un algoritmo eficiente para fusionar 
-//K listas ordenadas de forma creciente en una sola lista ordenada, utilizando un min heap.
-
-Cada lista está ordenada de forma creciente 
-y el resultado final debe ser una lista única que contenga 
-todos los elementos de las K listas, también ordenada de forma creciente.*/
-
 int main()
 {
-    // Cantidad de listas
+    
     int k;
     cin >> k;
+    int *tamanios = new int[k];
+    int **elementos = new int *[k];
+    int *pos = new int[k];
 
-    // Creo un min Heap que sera el que luego retornare
-    MinHeap * res = new MinHeap(k * 100); // Capacidad maxima k * 100
-
-    for(int i = 0; i < k; i++){
-
-        // Cantidad de elementos que tendra la lista
+    for (int i = 0; i < k; i++)
+    {
         int m;
         cin >> m;
+        tamanios[i] = m;
+        elementos[i] = new int[m];
+        pos[i] = 0;
 
-        // Ingreso elementos a la lista 
-        for(int j = 0; j < m; j++){
+        // Ingreso elementos a la lista
+        for (int j = 0; j < m; j++)
+        {
             int x;
             cin >> x;
-            res -> insertar(x);
+            elementos[i][j] = x;
         }
     }
 
 
-    while(!res->estaVacio()){
-        cout << res -> tope() << endl;
-        res -> eliminar();
+    MinHeap *res = new MinHeap(k);
+    for (int i = 0; i < k; i++)
+    {
+        if(tamanios[i] > 0) {
+            res->insertar(elementos[i][0]);
+        }
+    }
+
+    while (!res->estaVacio())
+    {
+        int minimo = res->tope();
+        res->eliminar();
+        cout << minimo << endl;
+        bool encontrado = false;
+
+        for(int i = 0; i < k && !encontrado; i++){
+            if(pos[i] < tamanios[i] && elementos[i][pos[i]] == minimo){
+                pos[i]++;
+                if(pos[i] < tamanios[i]){
+                    res->insertar(elementos[i][pos[i]]);
+                }
+                encontrado = true;
+            }
+        }
     }
     return 0;
 }
+                
+
