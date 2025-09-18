@@ -3,11 +3,20 @@
 #include <iostream>
 #include <limits>
 
+
+struct elem
+    {
+        int valor;
+        int lista;
+        int indice;
+    };
+
 class MinHeap
 {
 
+
 private:
-    int *vec;
+    elem *vec;
     int capacidad;
     int primeroLibre;
 
@@ -21,14 +30,14 @@ private:
         return pos / 2;
     }
 
-    int funcionComparadora(int a, int b)
+    int funcionComparadora(elem a, elem b)
     {
-        return a - b;
+        return a.valor - b.valor;
     }
 
     void intercambiar(int posPadre, int pos)
     {
-        int aux = vec[posPadre];
+        elem aux = vec[posPadre];
         vec[posPadre] = vec[pos];
         vec[pos] = aux;
     }
@@ -92,7 +101,7 @@ private:
 public:
     MinHeap(int capacidad)
     {
-        this->vec = new int[capacidad + 1];
+        this->vec = new elem[capacidad + 1];
         this->capacidad = capacidad;
         this->primeroLibre = 1;
     }
@@ -102,7 +111,7 @@ public:
         delete[] this->vec;
     }
 
-    void insertar(int dato)
+    void insertar(elem dato)
     {
         assert(!this->estaLleno());
         if (!this->estaLleno())
@@ -121,7 +130,7 @@ public:
         hundir(1);
     }
 
-    int tope()
+    elem tope()
     {
         assert(this->primeroLibre > 1);
         return this->vec[1];
