@@ -6,12 +6,29 @@
 
 using namespace std;
 
+int *tamanios;
+int **listas;
+
+bool haySiguienteEnLista(elem actual, elem &siguiente)
+{
+    int listaActual = actual.lista;
+    int indiceSig = actual.indice + 1;
+    if (indiceSig  < tamanios[listaActual])
+    {
+        siguiente.valor = listas[listaActual][indiceSig];
+        siguiente.lista = listaActual;
+        siguiente.indice = indiceSig;
+        return true;
+    }
+    return false;
+}
+
 int main()
 {
     int k;
     cin >> k;
-    int *tamanios = new int[k];
-    int **listas = new int *[k];
+    tamanios = new int[k];
+    listas = new int *[k];
 
     for (int i = 0; i < k; i++)
     {
@@ -41,18 +58,12 @@ int main()
     while (!res->estaVacio())
     {
         elem minimo = res->tope();
+        elem sig;
         res->eliminar();
         cout << minimo.valor << endl;
-
-        int listaActual = minimo.lista;
-        int indiceSig = minimo.indice + 1;
-        if (indiceSig < tamanios[listaActual])
+        if (haySiguienteEnLista(minimo, sig))
         {
-            elem e;
-            e.valor = listas[listaActual][indiceSig];
-            e.lista = listaActual;
-            e.indice = indiceSig;
-            res->insertar(e);
+            res->insertar(sig);
         }
     }
     return 0;
