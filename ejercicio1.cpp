@@ -9,7 +9,6 @@ using namespace std;
 
 void add(AVL *avl, int id, string nombre, int puntaje)
 {
-    
     avl->insertar(id, nombre, puntaje);
 }
 
