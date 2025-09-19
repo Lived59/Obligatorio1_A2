@@ -6,59 +6,65 @@
 
 using namespace std;
 
+int *tamanios;
+int **listas;
+
+bool haySiguienteEnLista(elem actual, elem &siguiente)
+{
+    int listaActual = actual.lista;
+    int indiceSig = actual.indice + 1;
+    if (indiceSig  < tamanios[listaActual])
+    {
+        siguiente.valor = listas[listaActual][indiceSig];
+        siguiente.lista = listaActual;
+        siguiente.indice = indiceSig;
+        return true;
+    }
+    return false;
+}
+
 int main()
 {
-    
     int k;
     cin >> k;
-    int *tamanios = new int[k];
-    int **elementos = new int *[k];
-    int *pos = new int[k];
+    tamanios = new int[k];
+    listas = new int *[k];
 
     for (int i = 0; i < k; i++)
     {
         int m;
         cin >> m;
         tamanios[i] = m;
-        elementos[i] = new int[m];
-        pos[i] = 0;
-
-        // Ingreso elementos a la lista
+        listas[i] = new int[m];
         for (int j = 0; j < m; j++)
         {
-            int x;
-            cin >> x;
-            elementos[i][j] = x;
+            cin >> listas[i][j];
         }
     }
-
 
     MinHeap *res = new MinHeap(k);
     for (int i = 0; i < k; i++)
     {
-        if(tamanios[i] > 0) {
-            res->insertar(elementos[i][0]);
+        if (tamanios[i] > 0)
+        {
+            elem e;
+            e.valor = listas[i][0];
+            e.lista = i;
+            e.indice = 0;
+            res->insertar(e);
         }
     }
 
     while (!res->estaVacio())
     {
-        int minimo = res->tope();
+        elem minimo = res->tope();
+        elem sig;
         res->eliminar();
-        cout << minimo << endl;
-        bool encontrado = false;
-
-        for(int i = 0; i < k && !encontrado; i++){
-            if(pos[i] < tamanios[i] && elementos[i][pos[i]] == minimo){
-                pos[i]++;
-                if(pos[i] < tamanios[i]){
-                    res->insertar(elementos[i][pos[i]]);
-                }
-                encontrado = true;
-            }
+        cout << minimo.valor << endl;
+        if (haySiguienteEnLista(minimo, sig))
+        {
+            res->insertar(sig);
         }
     }
     return 0;
 }
-                
-
