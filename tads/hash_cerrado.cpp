@@ -19,70 +19,104 @@ struct Asociacion {
 class HashCerrado {
     private:
         Asociacion** tabla;
-        int tamaño;
+        int tamano;
         int cantidadElementos;
         
         float factorDeCarga(){
-            return (float)cantidadElementos / tamaño;
+            return (float)cantidadElementos / tamano;
         }
 
         void rehash(){
-            int tamañoNuevo = siguientePrimo(tamaño * 2);
+            int tamanoNuevo = siguientePrimo(tamano * 2);
 
-            Asociacion** nuevaTabla = new Asociacion*[tamañoNuevo];
-            for (int i = 0; i < tamañoNuevo; i++) {
-                nuevaTabla[i] = nullptr;
+            // Creo una nueva tabla
+            Asociacion** nuevaTabla = new Asociacion*[tamanoNuevo];
+            for (int i = 0; i < tamanoNuevo; i++) {
+                nuevaTabla[i] = NULL;
             }
 
-            // mover solo OCUPADO; limpiar BORRADO
-            for (int i = 0; i < tamaño; i++) {
-                if(tabla[i] != nullptr){
+            // Copio y pego los elementos (Lo borrado no se cuenta)
+            for (int i = 0; i < this->tamano; i++) {
+                if(tabla[i] != NULL){
                     if (tabla[i]->estado == OCUPADO) {
+                        //h1
                         int hash = fnHash(tabla[i]->dominio, tabla[i]->path);
-                        int base = normalizar(hash, tamañoNuevo);
+                        int base = normalizar(hash, tamanoNuevo);
 
-                        // sondeo lineal en la tabla nueva
-                        for (int intento = 0; intento < tamañoNuevo; ++intento) {
-                            int pos = (base + intento) % tamañoNuevo;
-                            if (nuevaTabla[pos] == nullptr) {
+                        //h2 depende del tamano viejo, uso el nuevo
+                        unsigned int sum2 = 0;
+                        for (size_t k = 0; k < tabla[i]->dominio.size(); k++) {
+                            sum2 = sum2 * 131u + (unsigned char)tabla[i]->dominio[k];
+                        }
+                        sum2 = sum2 * 131u + (unsigned char)'/';
+                        for (size_t k = 0; k < tabla[i]->path.size(); k++) {
+                            sum2 = sum2 * 131u + (unsigned char)tabla[i]->path[k];
+                        }
+                        int step = 1 + (int)(sum2 % (unsigned)(tamanoNuevo - 1));
+                        if (step == 0) {
+                            step = 1;
+                        }
+                        
+                        // Copio el elemento
+                        for (int intento = 0; intento < tamanoNuevo; ++intento) {
+                            int pos = (base + intento * step) % tamanoNuevo;
+                            if (nuevaTabla[pos] == NULL) {
                                 nuevaTabla[pos] = tabla[i];
                                 break;
                             }
                         }
                     } else {
-                        delete tabla[i]; // liberar
+                        delete tabla[i];
                     }
                 }
             }
             delete[] tabla;
             tabla = nuevaTabla;
-            tamaño = tamañoNuevo;
+            tamano = tamanoNuevo;
         }
 
         int fnHash(const string& dominio, const string& path) {
             unsigned int sum = 0;
-
-            // Dominio
-            for (size_t k = 0; k < dominio.size(); ++k) {
-                sum = sum * 31 + dominio[k];
+            for (int k = 0; k < dominio.size(); k++){
+                sum = sum * 31 + (unsigned char)dominio[k];
+            } 
+            sum = sum * 31 + (unsigned char)'/';
+            for (int k = 0; k < path.size(); k++){
+                sum = sum * 31 + (unsigned char)path[k];
             }
-
-            // separador para evitar colisiones entre (a,bc) y (ab,c)
-            sum = sum * 31 + '/';
-
-            // Path
-            for (size_t k = 0; k < path.size(); ++k) {
-                sum = sum * 31 + path[k];
-            }
-
             return (int)sum;
         }
 
-        int normalizar(int hash, int tamaño){
-            //verificar valores posibles
-            int n = hash % tamaño;
+        int fnHash2(const string& dominio, const string& path) {
+            unsigned int sum = 0;
+            for (int k = 0; k < dominio.size(); k++){
+                sum = sum * 131 + (unsigned char)dominio[k];
+            } 
+            sum = sum * 131 + (unsigned char)'/';
+            for (int k = 0; k < path.size(); k++){
+                sum = sum * 131 + (unsigned char)path[k];
+            }
+            
+            if (this->tamano <= 1){
+                return 1;
+            } 
+            int step = 1 + (int)(sum % (unsigned)(this->tamano - 1));
+            if (step == 0){
+                step = 1; 
+            } 
+            return step;
+        }
+
+        int posicionTentativa(int i, string dominio, string path)
+        {
+            // Doble Hash
+            return (int)(this->fnHash(dominio, path) + i*this->fnHash2(dominio, path));
+        }
+
+        int normalizar(int hash, int tamano){
+            int n = hash % tamano;
             if(n < 0){
-                n += tamaño;
+                n += tamano;
             }
             return n;
         }
@@ -107,27 +141,23 @@ class HashCerrado {
             if(factorDeCarga() > 0.7){
                 this->rehash();
             }
-            
-            int hash = this->fnHash(dominio, path);
-            int normalizar = this->normalizar(hash, this->tamaño);
 
             int posBucketBorrado = -1;
             bool inserte = false;
             int intento = 0;
 
-            while (!inserte && intento < this->tamaño){
-                int hashValue = (normalizar + intento) % tamaño;
-                Asociacion* cell = tabla[hashValue];
+            while (!inserte && intento < this->tamano){
+                int hashValue = this->posicionTentativa(intento, dominio, path);
+                unsigned int pos = this->normalizar(hashValue, this->tamano);
+                Asociacion* celda = tabla[pos];
 
-                // A) bucket nunca usado (nullptr): decidimos dónde insertar
-                if (cell == nullptr) {
-                    int target = (posBucketBorrado != -1) ? posBucketBorrado : hashValue;
+                // A) Bucket nunca usado
+                if (celda == NULL) {
+                    int target = (posBucketBorrado != -1) ? posBucketBorrado : (int)pos;
 
-                    if (tabla[target] == nullptr) {
-                        // libre de verdad
-                        tabla[target] = new Asociacion(dominio, path, titulo, tiempo); // ctor deja OCUPADO
+                    if (tabla[target] == NULL) {
+                        tabla[target] = new Asociacion(dominio, path, titulo, tiempo);
                     } else {
-                        // era BORRADO → reusar objeto (evita leak)
                         tabla[target]->dominio = dominio;
                         tabla[target]->path    = path;
                         tabla[target]->titulo  = titulo;
@@ -137,23 +167,21 @@ class HashCerrado {
                     cantidadElementos++;
                     inserte = true;
                 }
-                // B) bucket BORRADO → recordar el primero para posible reutilización
-                else if (cell->estado == BORRADO) {
+                // B) Bucket borrado
+                else if (celda->estado == BORRADO) {
                     if (posBucketBorrado == -1){
-                        posBucketBorrado = hashValue;
+                        posBucketBorrado = (int)pos;
                     } 
                     intento++;
                 }
-                // C) bucket OCUPADO
+                // C) Bucket ocupado
                 else {
-                    // ¿misma clave compuesta?
-                    if (cell->dominio == dominio && cell->path == path) {
-                        // actualizar (no cambia cantidadElementos)
-                        cell->titulo = titulo;
-                        cell->tiempo = tiempo;
+                    if (celda->dominio == dominio && celda->path == path) {
+                        // Actualizo
+                        celda->titulo = titulo;
+                        celda->tiempo = tiempo;
                         inserte = true;
                     } else {
-                        // otra clave → seguir sondeando
                         intento++;
                     }
                 }
@@ -161,32 +189,27 @@ class HashCerrado {
         }
 
         void borrar(string dominio, string path){
-            int hash = this->fnHash(dominio, path);
-            int normalizar = this->normalizar(hash, this->tamaño);
-
             bool borre = false;
             int intento = 0;
 
-            while (!borre && intento < this->tamaño)
+            while (!borre && intento < this->tamano)
             {
-                int hashValue = (normalizar + intento) % tamaño;
-                Asociacion* cell = tabla[hashValue];
+                int hashValue = this->posicionTentativa(intento, dominio, path); // h1 + i*h2
+                unsigned int pos = this->normalizar(hashValue, this->tamano);
+                Asociacion* celda = tabla[pos];
 
-                // no existe
-                if (cell == nullptr) {
+                // No existe
+                if (celda == NULL) {
                     break;
                 }
-
-                // bucket borrado: seguir buscando
-                if (cell->estado == BORRADO) {
+                // Bucket borrado
+                if (celda->estado == BORRADO) {
                     intento++;
                     continue;
                 }
-
-                // comparar claves
-                if (cell->dominio == dominio && cell->path == path) {
-                    cell->estado = BORRADO;
-                    cantidadElementos--;
+                if (celda->dominio == dominio && celda->path == path) {
+                    celda->estado = BORRADO;
+                    this->cantidadElementos--;
                     borre = true;
                 } else {
                     intento++;
@@ -195,30 +218,26 @@ class HashCerrado {
         }
 
         string buscar(string dominio, string path){
-            int hash = this->fnHash(dominio, path);
-            int normalizar = this->normalizar(hash, this->tamaño);
-
             int intento = 0;
             string resultado = "recurso_no_encontrado";
 
-            while (intento < this->tamaño){
-                int hashValue = (normalizar + intento) % tamaño;
-                Asociacion* cell = tabla[hashValue];
+            while (intento < this->tamano){
+                int hashValue = this->posicionTentativa(intento, dominio, path);
+                unsigned int pos = this->normalizar(hashValue, this->tamano);
+                Asociacion* celda = tabla[pos];
 
-                // bucket nunca usado: no puede estar más adelante
-                if (cell == nullptr) {
+                // Bucket nunca usado
+                if (celda == NULL) {
                     break;
                 }
-
-                // bucket borrado: seguir buscando
-                if (cell->estado == BORRADO) {
+                // Bucket borrado
+                if (celda->estado == BORRADO) {
                     intento++;
                     continue;
                 }
-
-                // bucket ocupado: comparar clave compuesta
-                if (cell->dominio == dominio && cell->path == path) {
-                    resultado = cell->titulo + " " + to_string(cell->tiempo);
+                // Bucket ocupado
+                if (celda->dominio == dominio && celda->path == path) {
+                    resultado = celda->titulo + " " + to_string(celda->tiempo);
                     break;
                 } else {
                     intento++;
@@ -229,19 +248,18 @@ class HashCerrado {
 
     public:
         //Crea una tabla de hash vacia
-        HashCerrado(unsigned int tamañoInicial){
+        HashCerrado(unsigned int tamanoInicial){
             //unsigned int es para que no acepte negativos
-            this->tamaño = siguientePrimo(tamañoInicial);
+            this->tamano = siguientePrimo(tamanoInicial);
             this->cantidadElementos = 0;
-            this->tabla = new Asociacion*[this->tamaño];
-            for(int i = 0; i < this->tamaño; i++){
-                this->tabla[i] = nullptr;
+            this->tabla = new Asociacion*[this->tamano];
+            for(int i = 0; i < this->tamano; i++){
+                this->tabla[i] = NULL;
             }
         }
         
-        //Funcion clear() que borra todos los dominios
         ~HashCerrado(){
-            for(int i = 0; i < this->tamaño; i++){
+            for(int i = 0; i < this->tamano; i++){
                 delete this->tabla[i];
             }
             delete[] this->tabla;
@@ -268,20 +286,21 @@ class HashCerrado {
             return this->cantidadElementos;
         }
 
-        int count_domain(string dominio){
-            //Orden 1
-        }
-
-        string list_domain(string dominio){
-            //Orden K
-        }
-
         void clear_domain(string dominio){
-            //Orden K
+            // Orden K
+            // Ir a Domain y agarrar lista de recursos
+            // Con este domain y esa lista de recursos ir uno a uno y hashear en Asociacion y borrar
+            // Luego voy a Domain y borro toda la lista de recursos
         }
 
         void clear(){
-            this->~HashCerrado();
+            for (int i = 0; i < this->tamano; i++){
+            if (this->tabla[i] != NULL){
+                delete this->tabla[i];
+                this->tabla[i] = NULL;
+            }
+        }
+        this->cantidadElementos = 0;
         }
 };
     
