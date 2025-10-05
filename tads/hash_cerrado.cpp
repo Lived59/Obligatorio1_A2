@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include <cassert>
+
 using namespace std;
 
 enum Estado {VACIO, OCUPADO, BORRADO};
