@@ -103,39 +103,25 @@ private:
 
         // Verificar balance
         int balance = calcularBalance(nodo);
-        bool desbalanceDer = balance < -1;
-        bool desbalanceIzq = balance > 1;
-
-        // Desbalance izquierda-izquierda
-        if (desbalanceIzq && nodo->izq->id > id)
+        // Desbalance izquierda (LL o LR)
+        if (balance > 1)
         {
-            // rotacion derecha
-            rotacionHoraria(nodo);
+            // Caso LR: Si el hijo izquierdo está inclinado a la derecha (balance < 0), requiere rotación doble.
+            if (calcularBalance(nodo->izq) < 0)
+            {
+                rotacionAntiHoraria(nodo->izq); // Rotación izquierda en el hijo (parte 1 de LR)
+            }
+            rotacionHoraria(nodo); // Caso LL o parte 2 de LR
         }
-
-        // Desbalance izquierda-derecha
-        if (desbalanceIzq && nodo->izq->id < id)
+        // Desbalance derecha (RR o RL)
+        else if (balance < -1)
         {
-            // rotacion izquierda en Y
-            // rotacion derecha en Z
-            rotacionAntiHoraria(nodo->izq);
-            rotacionHoraria(nodo);
-        }
-
-        // Desbalance derecha-derecha
-        if (desbalanceDer && nodo->der->id < id)
-        {
-            // rotacion izquierda
-            rotacionAntiHoraria(nodo);
-        }
-
-        // Desbalance derecha-izquierda
-        if (desbalanceDer && nodo->der->id > id)
-        {
-            // rotacion derecha en Y
-            // rotacion izquierda en Z
-            rotacionHoraria(nodo->der);
-            rotacionAntiHoraria(nodo);
+            // Caso RL: Si el hijo derecho está inclinado a la izquierda (balance > 0), requiere rotación doble.
+            if (calcularBalance(nodo->der) > 0)
+            {
+                rotacionHoraria(nodo->der); // Rotación derecha en el hijo (parte 1 de RL)
+            }
+            rotacionAntiHoraria(nodo); // Caso RR o parte 2 de RL
         }
     }
 
@@ -150,27 +136,36 @@ private:
         }
     }
 
-
     bool buscarAux(NodoAVL *nodo, int id)
     {
-        if (!nodo) return false;
-        if (nodo->id == id) return true;
-        if (nodo->id < id) return buscarAux(nodo->der, id);
-        if (nodo->id > id) return buscarAux(nodo->izq, id);
+        if (!nodo)
+            return false;
+        if (nodo->id == id)
+            return true;
+        if (nodo->id < id)
+            return buscarAux(nodo->der, id);
+        if (nodo->id > id)
+            return buscarAux(nodo->izq, id);
     }
 
     string nombreAux(NodoAVL *nodo, int id)
     {
-        if (nodo->id == id) return nodo->nombre;
-        if (nodo->id < id) return nombreAux(nodo->der, id);
-        if (nodo->id > id) return nombreAux(nodo->izq, id);
+        if (nodo->id == id)
+            return nodo->nombre;
+        if (nodo->id < id)
+            return nombreAux(nodo->der, id);
+        if (nodo->id > id)
+            return nombreAux(nodo->izq, id);
     }
 
     int idAux(NodoAVL *nodo, int id)
     {
-        if (nodo->id == id) return nodo->puntaje;
-        if (nodo->id < id) return idAux(nodo->der, id);
-        if (nodo->id > id) return idAux(nodo->izq, id);
+        if (nodo->id == id)
+            return nodo->puntaje;
+        if (nodo->id < id)
+            return idAux(nodo->der, id);
+        if (nodo->id > id)
+            return idAux(nodo->izq, id);
     }
 
 public:
