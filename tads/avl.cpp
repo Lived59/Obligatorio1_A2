@@ -10,17 +10,17 @@ private:
     struct NodoAVL
     {
         int id;        // Esto es dato
-        string nombre; // Nuevo
-        int puntaje;   // Nuevo
+        string nombre;
+        int puntaje;
         NodoAVL *izq;
         NodoAVL *der;
         int altura;
     };
     NodoAVL *raiz;
-    int cant = 0;                  // Nuevo, para contar nodos
-    int maxPuntaje = -1;           // Nuevo, para guardar el puntaje mas alto
-    string top1 = "sin_jugadores"; // Nuevo, para guardar el puntaje mas alto
-    int idTop1 = -1;               // Nuevo, para guardar el id del puntaje mas alto
+    int cant = 0;
+    int maxPuntaje = -1;
+    string top1 = "sin_jugadores";
+    int idTop1 = -1;
 
     int max(int a, int b)
     {
@@ -73,15 +73,15 @@ private:
             nodo->puntaje = puntaje;
             nodo->izq = nodo->der = NULL;
             nodo->altura = 1;
-            cant++; // nuevo, actualiza la cantidad de nodos
+            cant++; 
             if (puntaje > maxPuntaje)
-            { // nuevo, actualiza el top1 si es necesario
+            {
                 maxPuntaje = puntaje;
                 top1 = nombre + " " + to_string(puntaje);
                 idTop1 = id;
             }
             else if (puntaje == maxPuntaje && id < idTop1)
-            { // nuevo, en caso de empate en puntaje, elige el id menor
+            {
                 top1 = nombre + " " + to_string(puntaje);
                 idTop1 = id;
             }
@@ -96,32 +96,33 @@ private:
             InsertarAux(nodo->izq, id, nombre, puntaje);
         }
         if (nodo->id == id)
-            return; // No se permiten duplicados
+            return;
 
         // Calcular altura
         nodo->altura = 1 + max(getAltura(nodo->izq), getAltura(nodo->der));
 
         // Verificar balance
         int balance = calcularBalance(nodo);
-        // Desbalance izquierda (LL o LR)
+        
+        // Desbalance izquierda
         if (balance > 1)
         {
-            // Caso LR: Si el hijo izquierdo está inclinado a la derecha (balance < 0), requiere rotación doble.
+            // Caso LR: Si el hijo izquierdo está inclinado a la derecha, requiere rotación doble.
             if (calcularBalance(nodo->izq) < 0)
             {
-                rotacionAntiHoraria(nodo->izq); // Rotación izquierda en el hijo (parte 1 de LR)
+                rotacionAntiHoraria(nodo->izq);
             }
-            rotacionHoraria(nodo); // Caso LL o parte 2 de LR
+            rotacionHoraria(nodo);
         }
-        // Desbalance derecha (RR o RL)
+        // Desbalance derecha
         else if (balance < -1)
         {
             // Caso RL: Si el hijo derecho está inclinado a la izquierda (balance > 0), requiere rotación doble.
             if (calcularBalance(nodo->der) > 0)
             {
-                rotacionHoraria(nodo->der); // Rotación derecha en el hijo (parte 1 de RL)
+                rotacionHoraria(nodo->der);
             }
-            rotacionAntiHoraria(nodo); // Caso RR o parte 2 de RL
+            rotacionAntiHoraria(nodo);
         }
     }
 

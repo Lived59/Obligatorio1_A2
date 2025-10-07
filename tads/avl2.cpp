@@ -87,25 +87,22 @@ private:
         nodo->size = 1 + getSize(nodo->izq) + getSize(nodo->der);
         // Verificar balance
         int balance = calcularBalance(nodo);
-        // Desbalance izquierda (LL o LR)
+        
         if (balance > 1)
         {
-            // Caso LR: Si el hijo izquierdo está inclinado a la derecha (balance < 0)
             if (calcularBalance(nodo->izq) < 0)
             {
-                rotacionAntiHoraria(nodo->izq); // Rotación izquierda en el hijo
+                rotacionAntiHoraria(nodo->izq);
             }
-            rotacionHoraria(nodo); // Caso LL o parte 2 de LR
+            rotacionHoraria(nodo);
         }
-        // Desbalance derecha (RR o RL)
         else if (balance < -1)
         {
-            // Caso RL: Si el hijo derecho está inclinado a la izquierda (balance > 0)
             if (calcularBalance(nodo->der) > 0)
             {
-                rotacionHoraria(nodo->der); // Rotación derecha en el hijo
+                rotacionHoraria(nodo->der);
             }
-            rotacionAntiHoraria(nodo); // Caso RR o parte 2 de RL
+            rotacionAntiHoraria(nodo);
         }
     }
 
