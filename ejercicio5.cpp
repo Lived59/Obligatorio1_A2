@@ -21,15 +21,11 @@ GrafoLista *kruskal(GrafoLista *g)
         Arista *ady = g->adyacentes(i);
         while (ady)
         {
-            
-            if (i < ady->destino)
-            {
-                elem e;
-                e.valor = ady->peso;
-                e.lista = ady->origen;
-                e.indice = ady->destino;
-                cp.insertar(e);
-            }
+            elem e;
+            e.valor = ady->peso;
+            e.lista = ady->origen;
+            e.indice = ady->destino;
+            cp.insertar(e);
             ady = ady->sig;
         }
     }
@@ -69,12 +65,13 @@ int main()
         Arista *ady = ACM->adyacentes(u);
         while (ady)
         {
-            pesoTotal += ady->peso;
+            if (u < ady->destino)
+                pesoTotal += ady->peso;
             ady = ady->sig;
         }
     }
 
     cout << pesoTotal << endl;
-    
+
     return 0;
 }
