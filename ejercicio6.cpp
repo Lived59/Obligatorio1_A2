@@ -46,18 +46,18 @@ int main()
 
     while (pos < F)
     {
+        // Agregar al heap todas las mejoras que se encuentren antes o en la entrada del pozo
+        while (indiceMejora < M && mejoras[indiceMejora].posicion <= pos)
+        {
+            heap.insertar(mejoras[indiceMejora].valor);
+            indiceMejora++;
+        }
+
         // Si el próximo pozo empieza en pos + 1
         //Me fijo si sigue habiendo pozos (índicePozo < N) 
         if (indicePozo < N && pozos[indicePozo].inicio == pos + 1)
         {
             int largoPozo = pozos[indicePozo].final - pozos[indicePozo].inicio + 1;
-
-            // Agregar al heap todas las mejoras que se encuentren antes o en la entrada del pozo
-            while (indiceMejora < M && mejoras[indiceMejora].posicion <= pos)
-            {
-                heap.insertar(mejoras[indiceMejora].valor);
-                indiceMejora++;
-            }
 
             // Tomar mejoras hasta poder cruzar el pozo
             while (potencia < largoPozo + 1)
@@ -65,6 +65,8 @@ int main()
                 if (heap.estaVacio())
                 {
                     cout << "Imposible" << endl;
+                    delete[] pozos;
+                    delete[] mejoras;
                     return 0;
                 }
                 potencia += heap.tope();

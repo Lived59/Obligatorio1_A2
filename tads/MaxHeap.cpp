@@ -64,7 +64,7 @@ private:
         if (posHijoIzq < this->primeroLibre && posHijoDer < this->primeroLibre)
         {
             // elegimos el hijo MAYOR, no el menor
-            int posHijoMayor = funcionComparadora(vec[posHijoIzq], vec[posHijoDer]) > 0 ? posHijoIzq : posHijoDer;
+            int posHijoMayor = funcionComparadora(vec[posHijoIzq], vec[posHijoDer]) < 0 ? posHijoIzq : posHijoDer;
             if (funcionComparadora(vec[pos], vec[posHijoMayor]) > 0)
             {
                 intercambiar(pos, posHijoMayor);
