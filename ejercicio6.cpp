@@ -48,15 +48,13 @@ int main()
         pos = pozos[indicePozo].inicio;
         int largoPozo = pozos[indicePozo].final - pozos[indicePozo].inicio + 1;
 
-        // Agregar al heap todas las mejoras que se encuentren antes o en la entrada del pozo
         while (indiceMejora < M && mejoras[indiceMejora].posicion <= pos)
         {
             heap.insertar(mejoras[indiceMejora].valor);
             indiceMejora++;
         }
 
-        // Si el próximo pozo empieza en pos + 1
-        // Tomar mejoras hasta poder cruzar el pozo
+
         while (potencia < largoPozo + 1)
         {
             if (heap.estaVacio())
