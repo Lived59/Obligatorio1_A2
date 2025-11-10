@@ -5,7 +5,7 @@
 
 using namespace std;
 
-int lastMomentPD(int N, int S, int L, int tamanio[], int lineas[], int puntos[]) {
+int Tabulacion(int N, int S, int L, int *tamanio, int *lineas, int *puntos) {
 
     int ***mat = new int **[N + 1];
     for (int i = 0; i <= N; i++) {
@@ -30,7 +30,11 @@ int lastMomentPD(int N, int S, int L, int tamanio[], int lineas[], int puntos[])
                 } else {
                     int sinTomar = mat[i - 1][s][l];
                     int tomar = punActual + mat[i - 1][s - tamActual][l - linActual];
-                    mat[i][s][l] = (tomar > sinTomar) ? tomar : sinTomar;
+                    if(tomar > sinTomar) {
+                        mat[i][s][l] = tomar;
+                    } else {
+                        mat[i][s][l] = sinTomar;
+                    }
                 }
             }
         }
@@ -61,7 +65,7 @@ int main() {
         cin >> tamanio[i] >> lineas[i] >> puntos[i];
     }
 
-    cout << lastMomentPD(N, S, L, tamanio, lineas, puntos) << endl;
+    cout << Tabulacion(N, S, L, tamanio, lineas, puntos) << endl;
 
     delete[] tamanio;
     delete[] lineas;
