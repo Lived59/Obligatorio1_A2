@@ -27,6 +27,12 @@ int main()
     cin >> in;
     int P;
     cin >> P;
-
+    for(int i = 0; i < P; i++){
+        int fila;
+        cin >> fila;
+        int col; 
+        cin >> col;
+        
+    }
     return 0;
 }
