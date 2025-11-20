@@ -1,0 +1,73 @@
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+struct Nodo {
+    string clave;
+    int valor;
+    Nodo* sig;
+
+    Nodo(string c, int v) : clave(c), valor(v), sig(NULL) {}
+};
+
+class HashAbierto {
+private:
+    Nodo** tabla;
+    int tamano;
+
+    int fnHash(const string& s) {
+        unsigned int sum = 0;
+        for (int k = 0; k < (int)s.size(); k++) {
+            sum = sum * 31 + (unsigned char)s[k];
+        }
+        return (int)(sum % tamano);
+    }
+
+public:
+    HashAbierto(int t) {
+        tamano = t;
+        tabla = new Nodo*[tamano];
+        for (int i = 0; i < tamano; i++) tabla[i] = NULL;
+    }
+
+    ~HashAbierto() {
+        for (int i = 0; i < tamano; i++) {
+            Nodo* cur = tabla[i];
+            while (cur != NULL) {
+                Nodo* nxt = cur->sig;
+                delete cur;
+                cur = nxt;
+            }
+        }
+        delete[] tabla;
+    }
+
+    void insertar(const string& clave, int valor) {
+        int pos = fnHash(clave);
+        Nodo* celda = tabla[pos];
+
+        while (celda != NULL) {
+            if (celda->clave == clave) {
+                celda->valor = valor;
+                return;
+            }
+            celda = celda->sig;
+        }
+
+        Nodo* nuevo = new Nodo(clave, valor);
+        nuevo->sig = tabla[pos];
+        tabla[pos] = nuevo;
+    }
+
+    int buscar(const string& clave) {
+        int pos = fnHash(clave);
+        Nodo* celda = tabla[pos];
+
+        while (celda != NULL) {
+            if (celda->clave == clave) return celda->valor;
+            celda = celda->sig;
+        }
+        return -1; // no existe
+    }
+};

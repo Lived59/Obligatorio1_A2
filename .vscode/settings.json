@@ -49,6 +49,7 @@
         "xstring": "cpp",
         "xtr1common": "cpp",
         "xutility": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "tabla_de_hash_abierto": "cpp"
     }
 }
