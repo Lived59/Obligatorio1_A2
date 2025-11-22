@@ -27,17 +27,17 @@ void backtracking(int fila, int col, char** fc, int** distMinima, int pasos, int
     if (pasos >= minPasos) {
         return;
     }
-    // Actualizo distancia mínima conocida a esta posición
+
     if (distMinima[fila][col] > pasos) {
         distMinima[fila][col] = pasos;
     } else {
         // Si ya llegamos aca con menos pasos termino
         return;
     }
-
-    // Si encontramos el producto, actualizamos el mínimo
+     
     if (esSolucion(fila, col, fc, producto)) {
         if (pasos < minPasos) {
+            // actualizamos el mínimo
             minPasos = pasos;
         }
         return;
@@ -46,22 +46,20 @@ void backtracking(int fila, int col, char** fc, int** distMinima, int pasos, int
     // Guardo movimientos posibles en una matriz
     int movimientos[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
     
-    //Pruebo moverme a todos lados
     for (int i = 0; i < 4; i++) {
         int nuevaFila = fila + movimientos[i][0];
         int nuevaCol = col + movimientos[i][1];
         
         if (esValida(nuevaFila, nuevaCol, fc, distMinima, pasos + 1, M, N, producto)) {
-            // Me muevo a una nueva pos
             backtracking(nuevaFila, nuevaCol, fc, distMinima, pasos + 1, M, N, producto, minPasos);
         }
     }
 }
 
 int encontrarProducto(char** fc, int m, int n, char producto) {
-    int minPasos = 10001; 
+    int minPasos = 10001;
     
-    // Si la posición inicial es el producto, retornar 0
+    // Producto en el principio
     if (fc[0][0] == producto) {
         return 0;
     }
@@ -71,14 +69,14 @@ int encontrarProducto(char** fc, int m, int n, char producto) {
     for (int i = 0; i < m; i++) {
         distMinima[i] = new int[n];
         for (int j = 0; j < n; j++) {
-            distMinima[i][j] = 10001; 
+            distMinima[i][j] = 10001;
         }
     }
     
     // El primer paso se cuenta al moverse a otra celda 
     backtracking(0, 0, fc, distMinima, 0, m, n, producto, minPasos);
     
-    // Libero memoria
+    // Liberar memoria
     for (int i = 0; i < m; i++) {
         delete[] distMinima[i];
     }
@@ -119,7 +117,7 @@ int main() {
             }
         }
         
-        // Encontrar el producto en este FC
+        // Encontrar el producto en este FC (Me guardo solo la menor cantidad de pasos)
         pasos[i] = encontrarProducto(fcs[i], m, n, producto);
     }
     
@@ -134,7 +132,6 @@ int main() {
         }
     }
     
-    // Imprimir resultado (índice comenzando en 1)
     cout << mejorFC << " " << menorPasos << endl;
     
     
